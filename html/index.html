@@ -1,0 +1,291 @@
+<html>
+<head>
+<title>Face Detection with a Sliding Window</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: capitalize;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Kapil Tahiliani</h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 5: Face detection with a sliding window</h2>
+
+<div style="float: right; padding: 20px">
+<img src="good6.png" />
+<p style="font-size: 14px">Face Detection using sliding window</p>
+</div>
+
+<p> 	Face detection has always been an active topic of research in the computer vision community. In this project, I have implemented a face detection algorithm based on sliding windows. The sliding window model classifies image patches as being an object or non-object, which in this case is a face. Face and non-face images have been used to generate HOG features, and a linear SVM is trained using these features. Using a sliding window approach, each patch of the image is classified as being face or non-face. This project is based on the paper by Dalal and Triggs 2005 for the detection of faces in images using a sliding window. The project can be divided into the following steps.</p>
+
+<ol>
+<li>Extractinng postive features using face images.</li>
+<li>Extracting negative features using the non-face images.</li>
+<li>Training a linear SVM using the positive and negative features.</li>
+<li>Using a sliding window to evaluate each patch of the image as being face or non-face.</li>
+</ol>
+
+
+
+<p> Hard negative mining was also performed using the trained classifier to find the false positive examples. These hard negative features were included in the training data using which the linear SVM was trained again. Using hard negative mining a moderate increase in accuracy was seen.	</p>
+
+<div style="clear:both">
+<h2>1. Histogram of Oriented Gradients (HOG) Features</h2>
+
+<p> HOG features are used in computer vision mostly for object detection. The HOG features of an image are computed using the gradients of the image in the x and y-direction. These gradients capture the contour, silhouette and texture information. Similar to SIFT features, in the HOG features we pool the gradient orientation information locally. The image window is divided into small spatial regions called cells. For each of these cells, a 1-D histogram of gradients is computed. In this project, I have taken the cell size to be 6. Hence a 36x36 image gives a HOG feature of dimension 6x6x31. This HOG feature is flattened out to get a HOG feature of dimension 1x1116. The methodology for the computation of positive and negative HOG features is given below.	</p>
+
+<h3>1.1 Positive HOG Features</h3>
+<p> To get positive HOG features, 36x36 face images were taken, and HOG features were computed for every image. The HOG features were flattened to get an 1116 dimensional feature for every image.</p>
+
+<h3>1.2 Negative HOG Features</h3>
+<p> To get negative HOG features, non-face images were taken, and since the non-face images were not of fixed size(36x36) as in the case of face images, 36x36 blocks of the non-face images were extracted. The HOG features were computed for these blocks and flattened out to get features of dimension 1x1116. Using multiple scales to sample the negative examples was tried but it did not have a major impact on accuracy. Moreover, it increased the computation time considerably. Hence it was not included in the final implementation.</p>
+
+<p> A visualization of the HOG feature template is given below. From the feature template, it is easy to visualize that the template somewhat resembles a face. Hence, it is not much of a leap to say that the HOG feature templates resembles the object to be detected, which in this case are faces.</p>
+
+<div style="float: left; padding: 20px">
+<img src="hog1.png"  width = "540"/>
+</div>
+
+<div style="float: right; padding: 20px">
+<img src="hog2.png" width="540" />
+</div>
+
+
+
+
+<h2>2. Training a Linear Support Vector Machine </h2>
+<p> A Linear Support Vector Machine was trained using the positive and negative features. The positive features were given a label '1' while the negative features were given a label '-1'. The linear SVM was trained using these labels and features to get a hyperplane to divide the data into face and non-face. The choice of parameter C for the Linear SVM has been discussed in the experimental design section. The figure below shows the separation of the positive and negative examples at training time. </p>
+<div style="float: center; padding: 20px">
+<img src="seperation.png" width = "600"/>
+</div>
+
+
+<h2>3. Sliding Window</h2>
+<p> In the final part of the project, a sliding window based face detector was implemented based on the work by Dalal and Triggs. To do this, HOG features were computed for the test images and patches were extracted from the HOG feature matrix. The extracted HOG features were flattened out for a given patch, and a 1x1116 dimension feature was obtained. The trained linear SVM was used to determine wether the extracted patch was a face or a non-face depending on the confidence. In this way, a sliding window was iterated through the entire image to detect faces in the image. This was done for every test image and on multiple scales. Bounding box coordinates and the corresponding confidence score was stored for those image patches whose confidence was above a predefined threshold. The confidence score was sorted, and nonmaximal suppression was performed on the top 500 detections. A bounding box was then displayed around the images patches that were passed after nonmaximal suppression. The choice of parameters is discussed in the experimental design section. </p>
+
+<h2>4. Mining Hard Negatives</h2>
+<p> Hard mining is performed to artificially generate more negative training samples. For this purpose, features were generated in a way similar to the case of random negative features, except for the fact that only the features with false positive prediction were returned instead of returning all extracted features. To do this, the trained linear classifier was used to determine whether the extracted feature was a false positive, and only the false positive features were stored and returned. The hard negative features were stacked with the random negative features. The linear SVM was trained again on these new features to generate a new hyperplane. The run detector was run again on the newly trained linear SVM to detect face patches in test images. An increment of approximately 3% can be seen in the accuracy.</p>
+
+<h2>5. Experimental Design</h2>
+<p> In this project, there were many parameters that required tuning. These parameters greatly influenced the results obtained. The role of these parameters and their effect on the result have been discussed in this section.
+
+<ol>
+	<li> One of the most important parameters which greatly influenced the result was C, in linear SVM. Large values of C causes the optimizer to look for a smaller margin hyperplane if that hyperplane does a better job of getting all the training points classified correctly. Conversely, a very small value of C causes the optimizer to look for a larger margin separating hyperplane, even if that hyperplane misclassifies more points. After testing for various values of C, 1e-2 was finally chosen for random negatives and 6e-2 for hard negatives. It was observed that a small overlap between the positive and negative examples gave better results. </li>
+
+	<li> The number of negative samples was iterated by choosing values from 10,000 to 200,000. By setting the number of samples to 100,000, a balance between average precision and computation time was found. </li>
+
+	<li> The threshold chosen determines how many image patches pass as faces. By choosing a lower value of the threshold, a lot of patches will pass as faces. For this project, the threshold was chosen as -2.</li>
+
+	<li>Another major parameter was the number of detections that were fed to nonmaximal suppression. The initial value of 15 was very low and was changed to 500. By doing this, the number of potential face patches that were fed to non maximal supression was increased. It was also observed that after a point, increasing the number of detections fed to the nonmaximal suppression had a negligible impact on the average precision of the detector. </li>
+
+	<li> The scales that were chosen also played an important role in the detection of faces in the test images. Since the size of the faces in the test images was not consistent with the HOG feature template, it was necessary to evaluate the images at different scales to detect the maximum number of faces.  It was also observed that increasing the number of scales beyond a point had a negative effect on the average precision.</li>
+</ol>
+</p>
+
+<h2>6. Results</h2>
+<p> In this section, some of the good results obtained using the sliding window are given below. In section 6.1 and 6.2, the detection performance has been evaluated using random negative features and using hard mining of negative features respectively. Using random negative features, an average precision of 86.5% was obtained and using hard negative features, an average precision of 84.9% was obtained. As a result of which an increase of approx 3% was seen using hard negative features.
+
+	</p>
+
+<table border=1>
+<tr>
+<td>
+<img src="good6.png" width="350"/>
+<img src="good1.png"  width="350"/>
+<img src="good3.png" width="350"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="good2.png" width="30%"/>
+<img src="good4.png"  width="30%"/>
+<img src="good5.png" width="30%"/>
+</td>
+</tr>
+
+</table>
+
+<br>
+<br>
+
+<h3>6.1 Random Negatives Performance Evaluation</h3>
+
+<div style="float: left; padding: 20px">
+<img src="accuracy.png"  width = "540"/>
+</div>
+
+<div style="float: right; padding: 20px">
+<img src="recall.png" width="540" />
+<p></p>
+</div>
+<br>
+<br>
+
+<h3>6.2 Hard Negatives Performance Evaluation</h3>
+
+<div style="float: left; padding: 20px">
+<img src="accuracyhard.png"  width = "540"/>
+</div>
+
+<div style="float: right; padding: 20px">
+<img src="recallhard.png" width="540" />
+<p></p>
+</div>
+
+
+<h2>7. Decision Tree Classifier (Extra Credit)</h2>
+
+<p>To test the performance of additional classifiers, the decision tree classifier was implemented. Decision trees are a non-parametric supervised learning method used for classification and regression. The goal is to create a model that predicts the value of a target variable by learning simple decision rules inferred from the data features. The performance using the decision tree classifier has been evaluated in the proceeding sections.</p>
+
+<h3>7.1 Performance Evaluation </h3>
+
+<div style="float: left; padding: 20px">
+<img src="accuracydecision.png"  width = "530"/>
+</div>
+
+<div style="float: right; padding: 20px">
+<img src="recalldecision.png" width="530" />
+<p></p>
+</div>
+
+<h3>7.2 Comments on Decision Tree Classifier</h3>
+
+<p>
+	Using the decision tree classifier, I was able to achieve an average precision of about 6.2% with a really bad recall. The time taken to train the classifier as well as for the detection was long. I believe that this can be attributed to the fact that decision trees are non-linear classifiers. Also, the given data can be better classified using a linear classifier as compared to a nonlinear classifier like the decision tree, as a result of which the average precision obtained was really low. Decision trees also tend to create over-complex trees that do not generalize the data well.
+</p>
+
+</body>
+</html>
